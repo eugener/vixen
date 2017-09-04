@@ -8,9 +8,9 @@ import scala.collection.mutable
 
 object Command {
 
-    def apply( caption: String )( action: AnyRef => Unit ): Command = {
+    def apply( caption: String )( perform: AnyRef => Unit ): Command = {
         val cmd = new Command {
-            val perform: (AnyRef) => Unit = action
+            val action: (AnyRef) => Unit = perform
         }
         cmd.caption = caption
         cmd
@@ -18,25 +18,24 @@ object Command {
 }
 
 
-trait Command {
+private[command] trait CommandDefinition {
+    private[command] val action: AnyRef => Unit
+    private[command] final val enabledProperty: BooleanProperty = new SimpleBooleanProperty(true)
+    private[command] final var captionProperty: StringProperty = new SimpleStringProperty("")
+}
+
+trait Command extends CommandDefinition {
 
     private val assignedComponents = mutable.ListBuffer[ComponentAdapter[_]]()
-
-    val perform: AnyRef => Unit
-
-    // enabled property
-    private val enabledProperty: BooleanProperty = new SimpleBooleanProperty(true)
 
     def enabled: Boolean = enabledProperty.get
     def enabled_=( value: Boolean ): Unit = enabledProperty.set(value)
 
-
-    // caption property
-    private var captionProperty: StringProperty = new SimpleStringProperty()
-
     def caption: String = captionProperty.get
     def caption_=( value: String ): Unit = captionProperty.set(value)
 
+
+    //TODO add more properties (icon, description, tooltip etc.)
 
     /**
       * Assignes command to the given component
@@ -44,11 +43,8 @@ trait Command {
       */
     def bindTo(component: AnyRef ): Unit = {
         Option(component).map{
-            case btn: Button => ButtonAdapter(btn, perform )
+            case btn: Button => ButtonAdapter(btn, action )
         }.foreach { adapter =>
-
-            println("enabledProperty: " + enabledProperty.get)
-
             adapter.enabledProperty.bind(enabledProperty)
             adapter.captionProperty.bind(captionProperty)
             assignedComponents += adapter
@@ -68,26 +64,3 @@ trait Command {
 
 }
 
-private trait ComponentAdapter[T] {
-    val component: T
-    val action: AnyRef => Unit
-
-    final val enabledProperty = new SimpleBooleanProperty(true)
-    final val captionProperty = new SimpleStringProperty()
-}
-
-private case class ButtonAdapter( component: Button, action: AnyRef => Unit ) extends ComponentAdapter[Button] {
-
-    component.addClickListener{ _ => if ( component.isEnabled ) action(component) }
-
-    enabledProperty.addListener{ (_,_,newValue) =>
-        println("enabled: " + newValue)
-        component.setEnabled(newValue)
-    }
-
-    captionProperty.addListener{ (_,_,newValue) =>
-        println("caption: " + newValue)
-        component.setCaption(newValue)
-    }
-
-}
