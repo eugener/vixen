@@ -1,4 +1,4 @@
 rootProject.name = 'vixen'
 include 'vixen-core'
-findProject(':vixen-core')?.name = 'vixen'
+include 'vixen-demo'
 

@@ -1,7 +1,7 @@
-plugins {
-    id "com.devsoap.plugin.vaadin" version "1.2.3"
-    id 'scala'
-}
+//plugins {
+//    id "com.devsoap.plugin.vaadin" version "1.2.3"
+//    id 'scala'
+//}
 
 allprojects {
 
@@ -18,18 +18,26 @@ allprojects {
     }
 
     apply plugin: 'scala'
-    apply plugin: 'com.devsoap.plugin.vaadin'
+    apply plugin: 'war'
+    apply from: 'https://raw.github.com/akhikhl/gretty/master/pluginScripts/gretty.plugin'
+//    apply plugin: 'com.devsoap.plugin.vaadin'
+
+//    // Enable joint compilation between Java and Scala
+//    sourceSets.main.scala.srcDir "src/main/java"
+//    sourceSets.main.java.srcDirs = []
 
 
 
-    vaadin {
-        version = '8.1.3'
-        logToConsole = true
-    }
+//    vaadin {
+//        version = '8.1.3'
+//        logToConsole = true
+//        manageDependencies = true
+//    }
 
 //    vaadinCompile {
 //        widgetset 'com.example.tutorial.widgetset.tutorialWidgetset'
 //    }
+
 
     group 'org.oxbow'
     version '1.0-SNAPSHOT'
@@ -47,6 +55,8 @@ allprojects {
         scala_minor = '3'
         scala_version = "$scala_base.$scala_minor"
 
+        vaadin_version = '8.1.3'
+
     }
 
 
@@ -54,6 +64,12 @@ allprojects {
 
         // scala standard library
         compile "org.scala-lang:scala-library:$scala_version"
+
+        compile "com.vaadin:vaadin-server:$vaadin_version"
+        compile "com.vaadin:vaadin-client:$vaadin_version"
+        compile "com.vaadin:vaadin-client-compiled:$vaadin_version"
+        compile "com.vaadin:vaadin-themes:$vaadin_version"
+        compile "com.vaadin:vaadin-client-compiler:$vaadin_version"
 
         testCompile group: 'junit', name: 'junit', version: '4.11'
     }
