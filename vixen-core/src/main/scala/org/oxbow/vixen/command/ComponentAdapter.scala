@@ -4,30 +4,38 @@ import com.vaadin.ui.Button
 import com.vaadin.ui.MenuBar
 
 
-private trait ComponentAdapter[T] extends CommandDefinition {
-    val component: T
+object ComponentAdapter {
+    def apply( component: AnyRef, action: (AnyRef) => Unit ): Option[ComponentAdapter[_]] = Option(component).map{
+        case btn: Button          => ButtonAdapter( btn, action )
+        case mn: MenuBar#MenuItem => MenuItemAdapter( mn, action )
+    }
+}
+
+private[command] trait ComponentAdapter[T] extends CommandDefinition {
+    val target: T
 }
 
 
-private case class ButtonAdapter( component: Button, action: AnyRef => Unit ) extends ComponentAdapter[Button] {
-    component.addClickListener{ _ => if ( component.isEnabled ) action(component) }
-    enabledProperty.addListener{ (_,_,newValue) => component.setEnabled(newValue) }
-    captionProperty.addListener{ (_,_,newValue) => component.setCaption(newValue) }
-    descriptionProperty.addListener{ (_,_,newValue) => component.setDescription(newValue) }
-    iconProperty.addListener{ (_,_,newValue) => component.setIcon(newValue) }
+private case class ButtonAdapter(target: Button, action: AnyRef => Unit ) extends ComponentAdapter[Button] {
+
+    target.addClickListener{ _ => if ( target.isEnabled ) action(target) }
+    enabledProperty.addListener{ (_,_,newValue) => target.setEnabled(newValue) }
+    captionProperty.addListener{ (_,_,newValue) => target.setCaption(newValue) }
+    descriptionProperty.addListener{ (_,_,newValue) => target.setDescription(newValue) }
+    iconProperty.addListener{ (_,_,newValue) => target.setIcon(newValue) }
     styleProperty.addListener{ (_,oldValue,newValue) =>
-        component.removeStyleName(oldValue)
-        component.addStyleName(newValue)
+        target.removeStyleName(oldValue)
+        target.addStyleName(newValue)
     }
 
 }
 
-private case class MenuItemAdapter(component: MenuBar#MenuItem, action: AnyRef => Unit ) extends ComponentAdapter[MenuBar#MenuItem] {
+private case class MenuItemAdapter(target: MenuBar#MenuItem, action: AnyRef => Unit ) extends ComponentAdapter[MenuBar#MenuItem] {
 
-    component.setCommand((selectedItem: MenuBar#MenuItem) => action(selectedItem))
-    enabledProperty.addListener{ (_,_,newValue) => component.setEnabled(newValue) }
-    captionProperty.addListener{ (_,_,newValue) => component.setText(newValue) }
-    descriptionProperty.addListener{ (_,_,newValue) => component.setDescription(newValue) }
-    iconProperty.addListener{ (_,_,newValue) => component.setIcon(newValue) }
+    target.setCommand((selectedItem: MenuBar#MenuItem) => action(selectedItem))
+    enabledProperty.addListener{ (_,_,newValue) => target.setEnabled(newValue) }
+    captionProperty.addListener{ (_,_,newValue) => target.setText(newValue) }
+    descriptionProperty.addListener{ (_,_,newValue) => target.setDescription(newValue) }
+    iconProperty.addListener{ (_,_,newValue) => target.setIcon(newValue) }
 
 }

@@ -3,11 +3,12 @@ package org.oxbow.vixen.demo
 
 import javax.servlet.annotation.WebServlet
 
-import com.vaadin.annotations.{Theme, Title, VaadinServletConfiguration}
+import com.vaadin.annotations.{Title, VaadinServletConfiguration}
 import com.vaadin.server.{ExternalResource, VaadinRequest, VaadinServlet}
 import com.vaadin.ui._
 import com.vaadin.ui.themes.ValoTheme
 import org.oxbow.vixen.command.Command
+import org.oxbow.vixen.command.Command._
 
 @WebServlet(value = Array("/*"), asyncSupported = true)
 @VaadinServletConfiguration( productionMode = false, ui = classOf[VixenDemoUI])
@@ -40,27 +41,39 @@ class VixenDemoUI extends UI {
 
     def getCommandTab: AbstractLayout = {
 
-        val cmd: Command = Command("Vixen Command"){ _ => Notification.show("Vixen Command executed!") }
-        cmd.description = "Vixen description"
-        cmd.style = ValoTheme.BUTTON_PRIMARY
-        cmd.icon = new ExternalResource(
+        val vCommand: Command = Command("Vixen Command"){ _ => Notification.show("Vixen Command executed!") }
+        vCommand.description = "Vixen description"
+        vCommand.style = ValoTheme.BUTTON_PRIMARY
+        vCommand.icon = new ExternalResource(
             "https://cdn2.iconfinder.com/data/icons/designer-skills/128/github-repository-svn-manage-files-contribute-branch-32.png")
 
 
-        val menu = new MenuBar
-        val fileItem = menu.addItem("File", null)
-        val menuItem = fileItem.addItem("", null)
-        cmd.bindTo(menuItem)
+        val group = CommandGroup("Group")(
+            vCommand,
+            vCommand,
+            CommandGroup ("Group") (
+                vCommand
+            )
+        )
+
+
+        val menu = buildMenu( new MenuBar, group, group )
+        menu.setStyleName(ValoTheme.MENUBAR_BORDERLESS)
+//        val menu = new MenuBar
+//        val fileItem = menu.addItem("File", null)
+//        val menuItem = fileItem.addItem("", null)
+//        vCommand.bindTo(menuItem)
+        println( "menu size: " + menu.getItems.size() )
 
         val button = new Button("Hello World!")
-        cmd.bindTo(button)
+        vCommand.bindTo(button)
 
         val button2 = new Button("Another Button")
-        cmd.bindTo(button2)
+        vCommand.bindTo(button2)
 
         val check = new CheckBox("Enable components")
-        check.setValue(cmd.enabled)
-        check.addValueChangeListener( _ => cmd.enabled = check.getValue)
+        check.setValue(vCommand.enabled)
+        check.addValueChangeListener( _ => vCommand.enabled = check.getValue)
 
         val content = new VerticalLayout
         content.addComponent(check)

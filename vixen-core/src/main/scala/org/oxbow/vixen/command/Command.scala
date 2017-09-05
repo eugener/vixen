@@ -3,7 +3,7 @@ package org.oxbow.vixen.command
 import javafx.beans.property._
 
 import com.vaadin.server.Resource
-import com.vaadin.ui.{Button, MenuBar}
+import com.vaadin.ui.MenuBar
 
 import scala.collection.mutable
 
@@ -16,21 +16,43 @@ object Command {
         cmd.caption = caption
         cmd
     }
-}
+
+    def CommandGroup( caption: String )( commands: Command*): Command = {
+        val cmd = new CommandGroup(commands.toArray)
+        cmd.caption = caption
+        cmd
+    }
+
+    type MenuBase = {
+        def addItem( caption: String, cmd: MenuBar.Command ): MenuBar#MenuItem
+    }
+
+    def buildMenu[T <: MenuBase](parentMenu: T, commands: Command*): T = {
+
+        def createMenuItem( parentMenu: T, cmd: Command ): MenuBar#MenuItem = {
+            val menuItem = parentMenu.addItem("<Temp>", null)
+            cmd.bindTo(menuItem)
+            menuItem
+        }
+
+        commands.foreach {
+            case group: CommandGroup =>
+                println("Add command group")
+                val menuItem = createMenuItem(parentMenu,group)
+                buildMenu( menuItem, group.subCommands: _* )
+            case cmd: Command =>
+                println("Add command to " + parentMenu.asInstanceOf[Any].getClass.getSimpleName)
+                createMenuItem(parentMenu,cmd)
+        }
+        parentMenu
+    }
 
 
-private[command] trait CommandDefinition {
-    private[command] val action: AnyRef => Unit
-    private[command] final val enabledProperty: BooleanProperty       = new SimpleBooleanProperty(true)
-    private[command] final val captionProperty: StringProperty        = new SimpleStringProperty("")
-    private[command] final val descriptionProperty: StringProperty    = new SimpleStringProperty("")
-    private[command] final val iconProperty: ObjectProperty[Resource] = new SimpleObjectProperty[Resource]()
-    private[command] final val styleProperty: StringProperty          = new SimpleStringProperty("")
 }
 
 trait Command extends CommandDefinition {
 
-    private val assignedComponents = mutable.ListBuffer[ComponentAdapter[_]]()
+    private val boundComponents = mutable.ListBuffer[ComponentAdapter[_]]()
 
     def enabled: Boolean = enabledProperty.get
     def enabled_=( value: Boolean ): Unit = enabledProperty.set(value)
@@ -50,27 +72,23 @@ trait Command extends CommandDefinition {
 
     /**
       * Assigns command to the given component
-      * @param component
       */
-    def bindTo(component: AnyRef ): Unit = {
-        Option(component).map{
-            case btn: Button          => ButtonAdapter( btn, action )
-            case mn: MenuBar#MenuItem => MenuItemAdapter( mn, action )
-        }.foreach { adapter =>
+    def bindTo(component: AnyRef): Unit = {
+        ComponentAdapter(component, action).foreach { adapter =>
             adapter.enabledProperty.bind(enabledProperty)
             adapter.captionProperty.bind(captionProperty)
             adapter.descriptionProperty.bind(descriptionProperty)
             adapter.iconProperty.bind(iconProperty)
             adapter.styleProperty.bind(styleProperty)
-            assignedComponents += adapter
+            boundComponents += adapter
         }
     }
 
     def unbind(component: AnyRef): Unit = {
         Option(component)
-            .flatMap{ c => assignedComponents.find(_.component == c) }
+            .flatMap { c => boundComponents.find(_.target == c) }
             .foreach { adapter =>
-                assignedComponents -= adapter
+                boundComponents -= adapter
                 adapter.enabledProperty.unbind()
                 adapter.captionProperty.unbind()
                 adapter.descriptionProperty.unbind()
@@ -82,3 +100,16 @@ trait Command extends CommandDefinition {
 
 }
 
+
+private[command] class CommandGroup( val subCommands: Array[Command] ) extends Command {
+    override private[command] val action = { _: AnyRef => () }
+}
+
+private[command] trait CommandDefinition {
+    private[command] val action: AnyRef => Unit
+    private[command] final val enabledProperty: BooleanProperty       = new SimpleBooleanProperty(true)
+    private[command] final val captionProperty: StringProperty        = new SimpleStringProperty("")
+    private[command] final val descriptionProperty: StringProperty    = new SimpleStringProperty("")
+    private[command] final val iconProperty: ObjectProperty[Resource] = new SimpleObjectProperty[Resource]()
+    private[command] final val styleProperty: StringProperty          = new SimpleStringProperty("")
+}
