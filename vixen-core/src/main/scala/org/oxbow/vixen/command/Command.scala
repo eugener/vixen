@@ -3,7 +3,7 @@ package org.oxbow.vixen.command
 import javafx.beans.property._
 
 import com.vaadin.server.Resource
-import com.vaadin.ui.Button
+import com.vaadin.ui.{Button, MenuBar}
 
 import scala.collection.mutable
 
@@ -22,10 +22,10 @@ object Command {
 private[command] trait CommandDefinition {
     private[command] val action: AnyRef => Unit
     private[command] final val enabledProperty: BooleanProperty       = new SimpleBooleanProperty(true)
-    private[command] final var captionProperty: StringProperty        = new SimpleStringProperty("")
-    private[command] final var descriptionProperty: StringProperty    = new SimpleStringProperty("")
-    private[command] final var iconProperty: ObjectProperty[Resource] = new SimpleObjectProperty[Resource]()
-    private[command] final var styleProperty: StringProperty          = new SimpleStringProperty("")
+    private[command] final val captionProperty: StringProperty        = new SimpleStringProperty("")
+    private[command] final val descriptionProperty: StringProperty    = new SimpleStringProperty("")
+    private[command] final val iconProperty: ObjectProperty[Resource] = new SimpleObjectProperty[Resource]()
+    private[command] final val styleProperty: StringProperty          = new SimpleStringProperty("")
 }
 
 trait Command extends CommandDefinition {
@@ -49,12 +49,13 @@ trait Command extends CommandDefinition {
 
 
     /**
-      * Assignes command to the given component
+      * Assigns command to the given component
       * @param component
       */
     def bindTo(component: AnyRef ): Unit = {
         Option(component).map{
-            case btn: Button => ButtonAdapter(btn, action )
+            case btn: Button          => ButtonAdapter( btn, action )
+            case mn: MenuBar#MenuItem => MenuItemAdapter( mn, action )
         }.foreach { adapter =>
             adapter.enabledProperty.bind(enabledProperty)
             adapter.captionProperty.bind(captionProperty)

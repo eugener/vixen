@@ -17,7 +17,7 @@ class VixenDemoServlet extends VaadinServlet {}
 @Title("Vixen Demo")
 class VixenDemoUI extends UI {
 
-    val cmd = Command("Vixen Command"){ _ => Notification.show("Vixen Command executed!") }
+    val cmd: Command = Command("Vixen Command"){ _ => Notification.show("Vixen Command executed!") }
     cmd.description = "Vixen description"
     cmd.style = ValoTheme.BUTTON_PRIMARY
     cmd.icon = new ExternalResource("https://cdn2.iconfinder.com/data/icons/designer-skills/128/github-repository-svn-manage-files-contribute-branch-32.png")
@@ -27,6 +27,11 @@ class VixenDemoUI extends UI {
         val content = new VerticalLayout
         setContent(content)
 
+        val menu = new MenuBar
+        val fileItem = menu.addItem("File", null)
+        val menuItem = fileItem.addItem("", null)
+        cmd.bindTo(menuItem)
+
         val button = new Button("Hello World!")
         cmd.bindTo(button)
 
@@ -35,8 +40,9 @@ class VixenDemoUI extends UI {
 
         val check = new CheckBox("Button enabled")
         check.setValue(cmd.enabled)
-        check.addValueChangeListener( e => cmd.enabled = check.getValue)
+        check.addValueChangeListener( _ => cmd.enabled = check.getValue)
 
+        content.addComponent(menu)
         content.addComponent(button)
         content.addComponent(button2)
         content.addComponent(check)
