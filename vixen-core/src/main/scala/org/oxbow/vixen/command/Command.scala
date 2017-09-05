@@ -1,7 +1,8 @@
 package org.oxbow.vixen.command
 
-import javafx.beans.property.{BooleanProperty, SimpleBooleanProperty, SimpleStringProperty, StringProperty}
+import javafx.beans.property._
 
+import com.vaadin.server.Resource
 import com.vaadin.ui.Button
 
 import scala.collection.mutable
@@ -20,8 +21,11 @@ object Command {
 
 private[command] trait CommandDefinition {
     private[command] val action: AnyRef => Unit
-    private[command] final val enabledProperty: BooleanProperty = new SimpleBooleanProperty(true)
-    private[command] final var captionProperty: StringProperty = new SimpleStringProperty("")
+    private[command] final val enabledProperty: BooleanProperty       = new SimpleBooleanProperty(true)
+    private[command] final var captionProperty: StringProperty        = new SimpleStringProperty("")
+    private[command] final var descriptionProperty: StringProperty    = new SimpleStringProperty("")
+    private[command] final var iconProperty: ObjectProperty[Resource] = new SimpleObjectProperty[Resource]()
+    private[command] final var styleProperty: StringProperty          = new SimpleStringProperty("")
 }
 
 trait Command extends CommandDefinition {
@@ -34,8 +38,15 @@ trait Command extends CommandDefinition {
     def caption: String = captionProperty.get
     def caption_=( value: String ): Unit = captionProperty.set(value)
 
+    def description: String = descriptionProperty.get
+    def description_=( value: String ): Unit = descriptionProperty.set(value)
 
-    //TODO add more properties (icon, description, tooltip etc.)
+    def icon: Resource = iconProperty.get
+    def icon_=( value: Resource ): Unit = iconProperty.set(value)
+
+    def style: String = styleProperty.get
+    def style_=( value: String ): Unit = styleProperty.set(value)
+
 
     /**
       * Assignes command to the given component
@@ -47,6 +58,9 @@ trait Command extends CommandDefinition {
         }.foreach { adapter =>
             adapter.enabledProperty.bind(enabledProperty)
             adapter.captionProperty.bind(captionProperty)
+            adapter.descriptionProperty.bind(descriptionProperty)
+            adapter.iconProperty.bind(iconProperty)
+            adapter.styleProperty.bind(styleProperty)
             assignedComponents += adapter
         }
     }
@@ -58,6 +72,9 @@ trait Command extends CommandDefinition {
                 assignedComponents -= adapter
                 adapter.enabledProperty.unbind()
                 adapter.captionProperty.unbind()
+                adapter.descriptionProperty.unbind()
+                adapter.iconProperty.unbind()
+                adapter.styleProperty.unbind()
             }
     }
 
