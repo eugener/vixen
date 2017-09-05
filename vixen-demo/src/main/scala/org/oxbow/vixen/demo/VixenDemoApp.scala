@@ -38,14 +38,16 @@ class VixenDemoUI extends UI {
         val button2 = new Button("Another Button")
         cmd.bindTo(button2)
 
-        val check = new CheckBox("Button enabled")
+        val check = new CheckBox("Enable components")
         check.setValue(cmd.enabled)
         check.addValueChangeListener( _ => cmd.enabled = check.getValue)
 
+        content.addComponent(check)
+        content.addComponent(new Label("One command controls all the components below"))
         content.addComponent(menu)
         content.addComponent(button)
         content.addComponent(button2)
-        content.addComponent(check)
+
 
     }
 
