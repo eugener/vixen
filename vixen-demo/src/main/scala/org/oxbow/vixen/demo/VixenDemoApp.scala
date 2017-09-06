@@ -2,15 +2,17 @@ package org.oxbow.vixen.demo
 
 
 import java.util
+import java.util.UUID
 import javax.servlet.annotation.WebServlet
 
 import com.vaadin.annotations.{Title, VaadinServletConfiguration}
 import com.vaadin.server.{ExternalResource, VaadinRequest, VaadinServlet}
 import com.vaadin.ui._
 import com.vaadin.ui.themes.ValoTheme
-import org.oxbow.vixen.GridView
 import org.oxbow.vixen.command.Command
 import org.oxbow.vixen.command.Command._
+import org.oxbow.vixen.grid.GridView
+import org.oxbow.vixen.grid.GridCommands._
 
 import scala.beans.BeanProperty
 
@@ -85,6 +87,20 @@ class VixenDemoUI extends UI {
 
     }
 
+
+    val people = util.Arrays.asList(
+        Person( "Pamela", "Mccaster", "developer"),
+        Person("Floretta", " Shorts", "manager"),
+        Person("Gonzalo", " Maples", "manager"),
+        Person("Lucas", " Gamon", "developer"),
+        Person("Kris", " Rasmussen", "manager"),
+        Person("Collene", " Studstill", "director"),
+        Person("Agnus", " Rosenau", "developer"),
+        Person("Enola", " Orsborn", "manager"),
+        Person("Gisele", " Cartledge", "manager"),
+        Person("Nicky", " Fick", "developer")
+    )
+
     def getTableViewTab: AbstractLayout = {
 
         val view = new GridView[Person]
@@ -92,11 +108,13 @@ class VixenDemoUI extends UI {
         view.grid.setItems(people)
         view.grid.addColumn( _.firstName ).setCaption("First Name")
         view.grid.addColumn( _.lastName ).setCaption("Last Name")
-//        view.grid.addColumn( _.position ).setCaption("Position")
+        view.grid.addColumn( _.position ).setCaption("Position")
 
         view.commands.addAll(
             Command("Insert")(),
-            Command("Update")(),
+            itemUpdateCommand(view.grid, "Update") { selection: Person =>
+               new Person("George", "Washington", "President")
+            },
             Command("Delete")()
         )
 
@@ -104,24 +122,19 @@ class VixenDemoUI extends UI {
     }
 
 
-    val people = util.Arrays.asList(
-        Person( "Pamela", "Mccaster"),
-        Person("Floretta", " Shorts"),
-        Person("Gonzalo", " Maples"),
-        Person("Lucas", " Gamon"),
-        Person("Kris", " Rasmussen"),
-        Person("Collene", " Studstill"),
-        Person("Agnus", " Rosenau"),
-        Person("Enola", " Orsborn"),
-        Person("Gisele", " Cartledge"),
-        Person("Nicky", " Fick")
-    )
-
-
 }
 
 case class Person(
-     @BeanProperty firstName: String,
-     @BeanProperty lastName: String
-//     @BeanProperty position: String
-)
+     @BeanProperty var firstName: String,
+     @BeanProperty var lastName: String,
+     @BeanProperty var position: String
+) {
+    private val id = UUID.randomUUID().toString
+
+    override def hashCode(): Int = id.hashCode()
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+        case p: Person => p.id == id
+        case _ => false
+    }
+}
