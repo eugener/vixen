@@ -10,7 +10,7 @@ import scala.language.reflectiveCalls
 
 object Command {
 
-    def apply( caption: String )( perform: AnyRef => Unit ): Command = {
+    def apply( caption: String )( perform: AnyRef => Unit = _ => () ): Command = {
         val cmd = new Command {
             val action: (AnyRef) => Unit = perform
         }
