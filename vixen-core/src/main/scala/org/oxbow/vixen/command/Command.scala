@@ -51,7 +51,7 @@ object Command {
 
 trait Command extends CommandDefinition {
 
-    private[command] val action: AnyRef => Unit
+    protected val action: AnyRef => Unit
 
     private val boundComponents = mutable.ListBuffer[ComponentAdapter[_]]()
 
@@ -103,7 +103,7 @@ trait Command extends CommandDefinition {
 
 
 private[command] final class CommandGroup( val subCommands: Array[Command] ) extends Command {
-    private[command] val action: AnyRef => Unit = null // no action for command group
+    protected val action: AnyRef => Unit = null // no action for command group
 }
 
 private[command] trait CommandDefinition {
