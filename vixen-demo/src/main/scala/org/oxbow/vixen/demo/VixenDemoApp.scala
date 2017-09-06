@@ -1,14 +1,18 @@
 package org.oxbow.vixen.demo
 
 
+import java.util
 import javax.servlet.annotation.WebServlet
 
 import com.vaadin.annotations.{Title, VaadinServletConfiguration}
 import com.vaadin.server.{ExternalResource, VaadinRequest, VaadinServlet}
 import com.vaadin.ui._
 import com.vaadin.ui.themes.ValoTheme
+import org.oxbow.vixen.GridView
 import org.oxbow.vixen.command.Command
 import org.oxbow.vixen.command.Command._
+
+import scala.beans.BeanProperty
 
 @WebServlet(value = Array("/*"), asyncSupported = true)
 @VaadinServletConfiguration( productionMode = false, ui = classOf[VixenDemoUI])
@@ -24,7 +28,7 @@ class VixenDemoUI extends UI {
         val tabs = new TabSheet
         tabs.setStyleName(ValoTheme.TABSHEET_FRAMED)
         tabs.addTab( getCommandTab, "Commands" )
-        tabs.addTab( getTableViewTab,  "TableView" )
+        tabs.addTab( getTableViewTab,  "GridView" )
 
         val layout = new VerticalLayout()
         val title = new Label("Vixen Demo")
@@ -82,8 +86,42 @@ class VixenDemoUI extends UI {
     }
 
     def getTableViewTab: AbstractLayout = {
-        new VerticalLayout
+
+        val view = new GridView[Person]
+
+        view.grid.setItems(people)
+        view.grid.addColumn( _.firstName ).setCaption("First Name")
+        view.grid.addColumn( _.lastName ).setCaption("Last Name")
+//        view.grid.addColumn( _.position ).setCaption("Position")
+
+        view.commands.addAll(
+            Command("Insert")(),
+            Command("Update")(),
+            Command("Delete")()
+        )
+
+        view
     }
 
 
+    val people = util.Arrays.asList(
+        Person( "Pamela", "Mccaster"),
+        Person("Floretta", " Shorts"),
+        Person("Gonzalo", " Maples"),
+        Person("Lucas", " Gamon"),
+        Person("Kris", " Rasmussen"),
+        Person("Collene", " Studstill"),
+        Person("Agnus", " Rosenau"),
+        Person("Enola", " Orsborn"),
+        Person("Gisele", " Cartledge"),
+        Person("Nicky", " Fick")
+    )
+
+
 }
+
+case class Person(
+     @BeanProperty firstName: String,
+     @BeanProperty lastName: String
+//     @BeanProperty position: String
+)
