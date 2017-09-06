@@ -48,22 +48,16 @@ class VixenDemoUI extends UI {
             "https://cdn2.iconfinder.com/data/icons/designer-skills/128/github-repository-svn-manage-files-contribute-branch-32.png")
 
 
-        val group = CommandGroup("Group")(
+        val group = CommandGroup("Command Group 1")(
             vCommand,
             vCommand,
-            CommandGroup ("Group") (
+            CommandGroup ("Command Group 2") (
                 vCommand
             )
         )
 
-
         val menu = buildMenu( new MenuBar, group, group )
         menu.setStyleName(ValoTheme.MENUBAR_BORDERLESS)
-//        val menu = new MenuBar
-//        val fileItem = menu.addItem("File", null)
-//        val menuItem = fileItem.addItem("", null)
-//        vCommand.bindTo(menuItem)
-        println( "menu size: " + menu.getItems.size() )
 
         val button = new Button("Hello World!")
         vCommand.bindTo(button)

@@ -5,20 +5,20 @@ import com.vaadin.ui.MenuBar
 
 
 object ComponentAdapter {
-    def apply( component: AnyRef, action: (AnyRef) => Unit ): Option[ComponentAdapter[_]] = Option(component).map{
-        case btn: Button          => ButtonAdapter( btn, action )
-        case mn: MenuBar#MenuItem => MenuItemAdapter( mn, action )
+    def apply( component: AnyRef ): Option[ComponentAdapter[_]] = Option(component).map{
+        case btn: Button          => ButtonAdapter(btn)
+        case mn: MenuBar#MenuItem => MenuItemAdapter(mn)
     }
 }
 
 private[command] trait ComponentAdapter[T] extends CommandDefinition {
     val target: T
+    def initAction( action: (AnyRef) => Unit ): Unit
 }
 
 
-private case class ButtonAdapter(target: Button, action: AnyRef => Unit ) extends ComponentAdapter[Button] {
+private case class ButtonAdapter( target: Button ) extends ComponentAdapter[Button] {
 
-    target.addClickListener{ _ => if ( target.isEnabled ) action(target) }
     enabledProperty.addListener{ (_,_,newValue) => target.setEnabled(newValue) }
     captionProperty.addListener{ (_,_,newValue) => target.setCaption(newValue) }
     descriptionProperty.addListener{ (_,_,newValue) => target.setDescription(newValue) }
@@ -28,14 +28,25 @@ private case class ButtonAdapter(target: Button, action: AnyRef => Unit ) extend
         target.addStyleName(newValue)
     }
 
+    def initAction( action: (AnyRef) => Unit ): Unit = {
+        Option(action).foreach{ ac =>
+            target.addClickListener{ _ => if ( target.isEnabled ) ac(target) }
+        }
+    }
+
 }
 
-private case class MenuItemAdapter(target: MenuBar#MenuItem, action: AnyRef => Unit ) extends ComponentAdapter[MenuBar#MenuItem] {
+private case class MenuItemAdapter(target: MenuBar#MenuItem) extends ComponentAdapter[MenuBar#MenuItem] {
 
-    target.setCommand((selectedItem: MenuBar#MenuItem) => action(selectedItem))
     enabledProperty.addListener{ (_,_,newValue) => target.setEnabled(newValue) }
     captionProperty.addListener{ (_,_,newValue) => target.setText(newValue) }
     descriptionProperty.addListener{ (_,_,newValue) => target.setDescription(newValue) }
     iconProperty.addListener{ (_,_,newValue) => target.setIcon(newValue) }
+
+    def initAction( action: (AnyRef) => Unit ): Unit = {
+        Option(action).foreach{ ac =>
+            target.setCommand((selectedItem: MenuBar#MenuItem) => ac(selectedItem))
+        }
+    }
 
 }
