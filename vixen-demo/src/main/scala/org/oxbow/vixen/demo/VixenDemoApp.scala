@@ -2,7 +2,7 @@ package org.oxbow.vixen.demo
 
 
 import java.util
-import java.util.UUID
+import java.util.{Collections, UUID}
 import javax.servlet.annotation.WebServlet
 
 import com.vaadin.annotations.{Title, VaadinServletConfiguration}
@@ -88,7 +88,8 @@ class VixenDemoUI extends UI {
     }
 
 
-    val people = util.Arrays.asList(
+    val people = new util.HashSet[Person]()
+    people.addAll( util.Arrays.asList(
         Person( "Pamela", "Mccaster", "developer"),
         Person("Floretta", " Shorts", "manager"),
         Person("Gonzalo", " Maples", "manager"),
@@ -99,6 +100,7 @@ class VixenDemoUI extends UI {
         Person("Enola", " Orsborn", "manager"),
         Person("Gisele", " Cartledge", "manager"),
         Person("Nicky", " Fick", "developer")
+    )
     )
 
     def getTableViewTab: AbstractLayout = {
@@ -129,7 +131,7 @@ case class Person(
      @BeanProperty var lastName: String,
      @BeanProperty var position: String
 ) {
-    private val id = UUID.randomUUID().toString
+    private def id = s"$firstName $lastName".toLowerCase
 
     override def hashCode(): Int = id.hashCode()
 
