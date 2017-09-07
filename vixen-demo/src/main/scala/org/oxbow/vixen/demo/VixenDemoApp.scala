@@ -11,8 +11,7 @@ import com.vaadin.ui._
 import com.vaadin.ui.themes.ValoTheme
 import org.oxbow.vixen.command.Command
 import org.oxbow.vixen.command.Command._
-import org.oxbow.vixen.grid.GridView
-import org.oxbow.vixen.grid.GridCommands._
+import org.oxbow.vixen.grid.{GridItemInsertCommand, GridItemRemoveCommand, GridItemUpdateCommand, GridView}
 
 import scala.beans.BeanProperty
 
@@ -88,7 +87,7 @@ class VixenDemoUI extends UI {
     }
 
 
-    val people = new util.HashSet[Person]()
+    val people = new util.ArrayList[Person]()
     people.addAll( util.Arrays.asList(
         Person( "Pamela", "Mccaster", "developer"),
         Person("Floretta", " Shorts", "manager"),
@@ -113,11 +112,17 @@ class VixenDemoUI extends UI {
         view.grid.addColumn( _.position ).setCaption("Position")
 
         view.commands.addAll(
-            Command("Insert")(),
-            itemUpdateCommand(view.grid, "Update") { selection: Person =>
-               new Person("George", "Washington", "President")
-            },
-            Command("Delete")()
+            new GridItemInsertCommand(view.grid, "Insert")( selection =>
+                Person("George", "Washington", "President")
+            ),
+
+            new GridItemUpdateCommand(view.grid, "Update")( selection =>
+               Person("George", "Washington", "President")
+            ),
+
+            new GridItemRemoveCommand(view.grid, "Delete")( selection =>
+                true
+            )
         )
 
         view

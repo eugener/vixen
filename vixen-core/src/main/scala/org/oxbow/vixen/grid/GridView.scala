@@ -18,6 +18,7 @@ class GridView[T] extends VerticalLayout {
 
     val grid = new Grid[T]
     grid.setWidth("100%")
+    grid.setSelectionMode(Grid.SelectionMode.SINGLE)
 
     val commands: ObservableList[Command] = FXCollections.observableArrayList[Command]()
     commands.addListener( new InvalidationListener {
